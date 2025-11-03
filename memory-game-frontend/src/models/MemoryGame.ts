@@ -2,6 +2,8 @@
 interface MemoryGameBlueprintCard{
     count: number;
     consecutiveErrorsAllowed: number;
+    penalizeType: 'all' | 'current';
+
     //position
     //maxopen time
 }
@@ -34,11 +36,25 @@ class MemoryGameCard{
     get position(){
         return this.value.position;
     }
+
+    toId(){
+        return MemoryGame.positionToKey(this.position);
+    }
 }
 
 class MemoryGameCardP extends MemoryGameCard{
     constructor(value:MemoryGameCardStruct){
         super(value);
+    }
+
+    get blueprint(){
+        return this.value.blueprint;
+    }
+    get visible(){
+        return this.value.visible;
+    }
+    get position(){
+        return this.value.position;
     }
 
     set blueprint(val:typeof this.value.blueprint){
@@ -54,9 +70,9 @@ class MemoryGameCardP extends MemoryGameCard{
 
 
 interface MemoryGameEvents{
-    closeCard?: (x:number,y:number) => Promise<void>;
-    openCard?: (x:number,y:number) => Promise<void>;
-    penalized?: (cardBlueprint: MemoryGameBlueprintCard) => Promise<void>
+    closeCard?: ((x:number,y:number) => Promise<void>) | null;
+    openCard?: ((x:number,y:number) => Promise<void>) | null;
+    penalized?: ((cardBlueprint: MemoryGameBlueprintCard) => Promise<void>) | null;
 }
 
 class MemoryGame{
@@ -82,17 +98,19 @@ class MemoryGame{
         for (let i = 0 ; i < blueprint.cards.length; ++i ){
             const cardBlueprint = blueprint.cards[i];
 
-            const newPositionKey = MemoryGame.positionToKey([
-                Math.floor(Math.random() * this.getGridOrder()), 
-                Math.floor(Math.random() * this.getGridOrder())
-            ]);
+            for (let j = 0; j < cardBlueprint.count; ++j){
+                const newPositionKey = MemoryGame.positionToKey([
+                    Math.floor(Math.random() * this.getGridOrder()), 
+                    Math.floor(Math.random() * this.getGridOrder())
+                ]);
 
-            if (!this.board[newPositionKey])   this.board[newPositionKey] = new MemoryGameCardP({
-                blueprint: cardBlueprint,
-                visible: false,
-                position: MemoryGame.keyToPostion(newPositionKey)
-            });
-            else    --i;        //Repeat initial position selection !!
+                if (!this.board[newPositionKey])   this.board[newPositionKey] = new MemoryGameCardP({
+                    blueprint: cardBlueprint,
+                    visible: false,
+                    position: MemoryGame.keyToPostion(newPositionKey)
+                });
+                else    --j;        //Repeat initial position selection !!
+            }
         }
     }
 
@@ -121,9 +139,17 @@ class MemoryGame{
     isOpenedCard(x:number,y:number):boolean{
         this.boardIndexValidation(x,y);
 
-        const index = [x,y].toString();
+        const index = MemoryGame.positionToKey([x,y]);
 
         return this.board[index]?.visible || false;
+    }
+
+    getCountOfOpenedCards(cardBlueprint: MemoryGameBlueprintCard){
+        return this.getCards().filter(card => card.blueprint === cardBlueprint && card.visible === true).length;
+    }
+
+    isWinningCard(cardBlueprint: MemoryGameBlueprintCard){
+        return this.getCountOfOpenedCards(cardBlueprint) === cardBlueprint.count;
     }
 
 
@@ -143,12 +169,32 @@ class MemoryGame{
         return this;
     }
 
+    private async closeAllUncompletedCards(){
+        const completedCardsBlueprints = 
+        this.blueprint.cards
+        .filter(cardBlueprint => this.getCountOfOpenedCards(cardBlueprint) === cardBlueprint.count);
+
+        Object.entries(this.board).forEach(async ([index,card]) => {
+            if (completedCardsBlueprints.includes(card.blueprint))      return ;
+
+            card.visible = false;
+            //emit
+            const [x,y] = index.split(',').map(Number);
+            await this.events.closeCard?.(x,y);
+        });
+        return this;
+    }
+
     async openCard(x:number,y:number){
         this.boardIndexValidation(x,y);
 
-        const index = [x,y].toString();
+        const index = MemoryGame.positionToKey([x,y]);
 
         const card = this.board[index];
+
+        if (this.isWinningCard(card.blueprint)){
+            return this;
+        }
 
         if (!card){
             if (this.blueprint.penalizeOnNullCards){
@@ -184,7 +230,13 @@ class MemoryGame{
 
         if (this.errorsCount > blueprintOfCurrent.consecutiveErrorsAllowed){
             await this.events.penalized?.(blueprintOfCurrent);
-            await this.closeAllCards();
+            if (blueprintOfCurrent.penalizeType === 'all'){
+                await this.closeAllCards();
+            }
+            else{
+                await this.closeAllUncompletedCards();
+            }
+            
         }
 
         return this;
