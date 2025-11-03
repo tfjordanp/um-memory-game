@@ -143,9 +143,9 @@ class MemoryGame{
         
         ++this.errorsCount;
 
-        if (this.errorsCount >= blueprintOfCurrent.consecutiveErrorsAllowed){
-            await this.closeAllCards();
+        if (this.errorsCount > blueprintOfCurrent.consecutiveErrorsAllowed){
             await this.events.penalized?.(blueprintOfCurrent);
+            await this.closeAllCards();
         }
 
         return this;
@@ -155,12 +155,13 @@ class MemoryGame{
 
 
     private boardIndexValidation(x:number,y:number){
-        if (x >= 0 && x < this.getGridOrder()){
+        if (x < 0 && x >= this.getGridOrder()){
             throw Error('x should be in the range [0,gridOrder)');
         } 
-        if (y >= 0 && y < this.getGridOrder()){
+        if (y < 0 && y >= this.getGridOrder()){
             throw Error('y should be in the range [0,gridOrder)');
         }
     }
 }
 
+export { MemoryGame , type MemoryGameBlueprint, };
