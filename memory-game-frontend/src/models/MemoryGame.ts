@@ -116,7 +116,7 @@ class MemoryGame{
 
     //Getters
     getGridOrder(){
-        return Math.ceil(Math.sqrt(this.getTotalCardsCount()))**2;
+        return Math.ceil(Math.sqrt(this.getTotalCardsCount()));
     }
 
     getTotalCardsCount(){
@@ -131,9 +131,24 @@ class MemoryGame{
         return Object.values(this.board) as MemoryGameCard[];
     }
 
+    getNullCardsPositions(){
+        let positions:string[] = [];
+        for (let i = 0 ; i < this.getGridOrder() ; ++i){
+            for (let j = 0 ; j < this.getGridOrder() ; ++j){
+                const index = MemoryGame.positionToKey([i,j]);
+                if (!this.board[index]){
+                    positions.push(index);
+                }
+            }
+        }
+        return positions;
+    }
+
     //Changing Getters
     getBlueprintOfOpenedCards(): MemoryGameBlueprintCard | null{
-        return Object.values(this.board).find(card => card.visible)?.blueprint || null;
+        return Object.values(this.board)
+        .filter(card => !this.isWinningCard(card.blueprint))
+        .find(card => card.visible)?.blueprint || null;
     }
 
     isOpenedCard(x:number,y:number):boolean{
@@ -145,13 +160,20 @@ class MemoryGame{
     }
 
     getCountOfOpenedCards(cardBlueprint: MemoryGameBlueprintCard){
-        return this.getCards().filter(card => card.blueprint === cardBlueprint && card.visible === true).length;
+        return this.getCards()
+        .filter(card => card.blueprint === cardBlueprint && card.visible === true).length;
     }
 
     isWinningCard(cardBlueprint: MemoryGameBlueprintCard){
         return this.getCountOfOpenedCards(cardBlueprint) === cardBlueprint.count;
     }
 
+    hasWonGame():boolean{
+        for (const cardBlueprint of this.blueprint.cards){
+            if (!this.isWinningCard(cardBlueprint))     return false;
+        }
+        return true;
+    }
 
     setEventListeners(events:MemoryGameEvents){
         Object.assign(this.events,events);
@@ -163,7 +185,7 @@ class MemoryGame{
         Object.entries(this.board).forEach(async ([index,card]) => {
             card.visible = false;
             //emit
-            const [x,y] = index.split(',').map(Number);
+            const [x,y] = MemoryGame.keyToPostion(index);
             await this.events.closeCard?.(x,y);
         });
         return this;
@@ -179,7 +201,7 @@ class MemoryGame{
 
             card.visible = false;
             //emit
-            const [x,y] = index.split(',').map(Number);
+            const [x,y] = MemoryGame.keyToPostion(index);
             await this.events.closeCard?.(x,y);
         });
         return this;
@@ -192,14 +214,14 @@ class MemoryGame{
 
         const card = this.board[index];
 
-        if (this.isWinningCard(card.blueprint)){
-            return this;
-        }
-
         if (!card){
             if (this.blueprint.penalizeOnNullCards){
                 await this.closeAllCards();
             }
+            return this;
+        }
+
+        if (this.isWinningCard(card.blueprint)){
             return this;
         }
 
@@ -233,7 +255,7 @@ class MemoryGame{
             if (blueprintOfCurrent.penalizeType === 'all'){
                 await this.closeAllCards();
             }
-            else{
+            else{       //current
                 await this.closeAllUncompletedCards();
             }
             

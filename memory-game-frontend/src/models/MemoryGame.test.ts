@@ -8,7 +8,7 @@ const initGameBlueprint: MemoryGameBlueprint = {cards: [
     {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
     {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
     {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
-],penalizeOnNullCards: false};
+],penalizeOnNullCards: true};
 
 const initGame = new MemoryGame(initGameBlueprint);
 
@@ -28,8 +28,8 @@ describe('MemoryGame Init State Tests',() => {
 
         assert.strictEqual(
             game.getGridOrder(), 
-            9,
-            'Grid order should be #9'
+            3,
+            'Grid order should be #3'
         );
     });
 
@@ -101,6 +101,17 @@ describe('MemoryGame Init State Tests',() => {
         
     });
 
+    it('Should create a game state with the expected number of null cards',() => {
+        const game = initGame;
+
+        assert.strictEqual(
+            game.getNullCardsPositions().length, 
+            1,
+            'getNullCardsPositions.length should be #1'
+        );
+        
+    });
+
 });
 
 describe('MemoryGame State Mutation Tests',() => {
@@ -118,21 +129,6 @@ describe('MemoryGame State Mutation Tests',() => {
             game.isOpenedCard(...pos1) , 
             true,
             'Should open first card'
-        );
-    });
-
-    it('Should always close an opened card upon a #openCard call',async () => {
-        const game = initGame;
-
-        const pos1 = MemoryGame.keyToPostion(game.getCardsPositions()[0])
-
-        await game.openCard(...pos1);
-        await game.openCard(...pos1);
-
-        assert.strictEqual(
-            game.isOpenedCard(...pos1) , 
-            false,
-            'Should close first card'
         );
     });
 
@@ -171,32 +167,89 @@ describe('MemoryGame State Mutation Tests',() => {
         for (const card of firstTypeCards){
             await game.openCard(...card.position);
             assert.strictEqual(card.visible, true,'The winning card should be visible even though it was requested to close');
-        }
-        
+        }        
     });
 
-    /*it('Should always close all instances of the current opened card when a wrong card was opened',async () => {
+    it('Should not consider winning cards on #getBlueprintOfOpenedCards',async () => {
         const game = initGame;
-
-        const pos1 = game.getCards()[0].position;
-
-        const pos2 = game.getCards().find(card => card.blueprint !== game.getCards()[0].blueprint)?.position as [number,number];
 
         const firstTypeCards = game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[0]);
 
         for (const card of firstTypeCards){
-            game.openCard(...card.position);
+            await game.openCard(...card.position);
+            assert.strictEqual(card.visible, true,'The card should open');
         }
 
-        await game.openCard(...pos1);
-        await game.openCard(...pos2);
+        assert.strictEqual(game.getBlueprintOfOpenedCards(),null,'There are no active opened cards at this point');
+    });
 
-        assert.strictEqual(game.getBlueprintOfOpenedCards(), null,'The grid should be closed');
-    });*/
+    it('Should not close already winning cards upon penalization',async () => {
+        const game = initGame;
+
+        const firstTypeCards = game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[0]);
+
+        for (const card of firstTypeCards){
+            await game.openCard(...card.position);
+        }
+
+        const secondTypeCards = game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[1]);
+        const thirdTypeCards = game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[2]);
+
+        await game.openCard(...secondTypeCards[0].position);
+
+        assert.strictEqual(secondTypeCards[0].visible,true,'The second type card should be opened');
+
+        await game.openCard(...thirdTypeCards[0].position);
+
+        assert.strictEqual(!secondTypeCards[0].visible && !thirdTypeCards[0].visible,true,'Both the second and third type cards should be closed');
+
+        for (const card of firstTypeCards){
+            assert.strictEqual(card.visible,true,'First type card should be opened');
+        }
+    });
+
+    it('Should set #hasWon to true when all card blueprints are winning',async () => {
+        const game = initGame;
+
+        const cardGroups = [0,1,2,3].map(i => game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[i]));
+
+        for (const group of cardGroups){
+            for (const card of group){
+                assert.strictEqual(game.hasWonGame(),false,'At this point, the game should not be won');
+                await game.openCard(...card.position);
+                assert.strictEqual(card.visible, true,'The card should open');
+            }
+            assert.strictEqual(game.isWinningCard(group[0].blueprint),true,'The card blueprint should win');
+        }
+
+        assert.strictEqual(game.hasWonGame(),true,'At this point, the game should be won');
+    });
+
+    it('Should guarantee clicking on null cards closes all cards even the winning ones (a.k.a. closes the grid)',async () => {
+        const game = initGame;
+
+        const firstTypeCards = game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[0]);
+
+        for (const card of firstTypeCards){
+            await game.openCard(...card.position);
+        }
+
+        const secondTypeCards = game.getCards().filter(card => card.blueprint === initGameBlueprint.cards[1]);
+        await game.openCard(...secondTypeCards[0].position);
+
+        const [ nullpos ] = game.getNullCardsPositions();
+        await game.openCard(...MemoryGame.keyToPostion(nullpos));
+        
+        for (const card of game.getCards()){
+            assert.strictEqual(card.visible,false,'All cards should be closed');
+        }
+    });
+
+
 
 /*
 won cards should not be closed,
-or what if the could be depending on some level blueprint like
+or what if they could depend on some level blueprint like
 onError do nothing , or close everything or just close failed card, or
 close failed + 1,2,3 or more completed cards, ???
 */
