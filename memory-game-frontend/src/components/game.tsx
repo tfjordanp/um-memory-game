@@ -47,7 +47,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
         if (!element)   return ;
 
         
-        console.log(element.style.background);
+        //console.log(element.style.background);
 
         await element.animate([
             { transform: 'scaleX(1)' },          // Starting state
@@ -96,6 +96,13 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
     highlight winning cards !!
   */
 
+    /*
+      ISSUE, announces player has won before finishing turning card animation --SOLVED
+      By making sure 2 openCards are never active at the same time, i.e in a pure synchronous fashion !!!
+      Ensures good function.
+      Perspectives: enable user to manipulate several cards simultaneously(opening or closing one when another one's animation is still running) + keep correctness
+    */
+
 
   return (
     <GameModelContext.Provider value={gameModel}>
@@ -112,16 +119,20 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
                     style={{...cardStyles,background,cursor: allCardsDisabled ? 'not-allowed': 'pointer'}}
                     className='game-card'
                     onClick={async e => {
-                        //setAllCardsDisabled(true);
+                        setAllCardsDisabled(true);
+
+                        await refreshGUI();
 
                         await gameModel.openCard(...card.position);
                         //await refreshGUI();
+
+                        console.log('Animations done');
 
                         if (gameModel.hasWonGame()){
                             alert('BINGO');
                         }
 
-                        //setAllCardsDisabled(false);
+                        setAllCardsDisabled(false);
                     }}
                     ref={cardElements[i]}
                     disabled={allCardsDisabled}

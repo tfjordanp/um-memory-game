@@ -186,14 +186,14 @@ class MemoryGame{
 
     //Mutators
     private async closeAllCards(){
-        Object.entries(this.board).forEach(async ([index,card]) => {
+        await Promise.all(Object.entries(this.board).map(async ([index,card]) => {
             if (card.visible === false)     return ;
 
             card.visible = false;
             //emit
             const [x,y] = MemoryGame.keyToPostion(index);
             await this.events.closeCard?.(x,y);
-        });
+        }));
         return this;
     }
 
@@ -202,7 +202,7 @@ class MemoryGame{
         this.blueprint.cards
         .filter(cardBlueprint => this.getCountOfOpenedCards(cardBlueprint) === cardBlueprint.count);
 
-        Object.entries(this.board).forEach(async ([index,card]) => {
+        await Promise.all(Object.entries(this.board).map(async ([index,card]) => {
             if (completedCardsBlueprints.includes(card.blueprint))      return ;
             
             if (card.visible === false)     return ;
@@ -211,11 +211,12 @@ class MemoryGame{
             //emit
             const [x,y] = MemoryGame.keyToPostion(index);
             await this.events.closeCard?.(x,y);
-        });
+        }));
         return this;
     }
 
     async openCard(x:number,y:number){
+        
         this.boardIndexValidation(x,y);
 
         const index = MemoryGame.positionToKey([x,y]);
