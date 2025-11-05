@@ -5,7 +5,13 @@ import GameModelContext from '../contexts/GameModelContext';
 import Board from '../components/board';
 import Card from '../components/card';
 
+/*import { CountUp } from "https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.6.0/countUp.min.js";
+import { Odometer } from "./odometer.min.js";*/
+
 import { delay } from '../utils';
+
+import Odometer from 'react-odometerjs';
+import './odometer-theme-slot-machine.css';
 
 import './game.css';
 
@@ -25,6 +31,8 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
     { length: gameModel.getTotalCardsCount() },
     () => useRef<HTMLButtonElement | null>(null)
   );
+
+  const [ actionsCount, setActionsCount ] = useState(0);
 
   const [ _ , update ] = useState(false);
 
@@ -74,7 +82,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
     gameModel.setEventListeners({
         openCard: playCardAnimation,
         closeCard: playCardAnimation,
-
+        //shake board on penalize ?!
     });
   },[gameModel]);
 
@@ -93,7 +101,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
   };
 
   /*
-    highlight winning cards !!
+    highlight winning cards !! -- DONE
   */
 
     /*
@@ -103,9 +111,13 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
       Perspectives: enable user to manipulate several cards simultaneously(opening or closing one when another one's animation is still running) + keep correctness
     */
 
-
   return (
     <GameModelContext.Provider value={gameModel}>
+      <div style={{textAlign: 'center',marginBottom: '1rem',userSelect: 'none',fontSize: '2rem'}}>
+        {actionsCount <= 9 && <Odometer value={0} format="ddd" />}
+        {actionsCount <= 99 && <Odometer value={0} format="ddd" />}
+        <Odometer value={actionsCount} format="ddd" />
+      </div>
       <Board style={boardStyles}>
         {
           gameModel.getCards().map((card,i) => {
@@ -137,9 +149,12 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
                       }
                       : async e => {
                         setAllCardsDisabled(true);
-
+                        if (!gameModel.isWinningCard(card.blueprint)){
+                          setActionsCount(actions => actions + 1);
+                        }
                         await refreshGUI();
 
+                        
                         await gameModel.openCard(...card.position);
 
                         if (gameModel.hasWonGame()){
