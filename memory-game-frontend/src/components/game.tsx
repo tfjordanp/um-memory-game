@@ -99,7 +99,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
     /*
       ISSUE, announces player has won before finishing turning card animation --SOLVED
       By making sure 2 openCards are never active at the same time, i.e in a pure synchronous fashion !!!
-      Ensures good function.
+      Ensures good functionning.
       Perspectives: enable user to manipulate several cards simultaneously(opening or closing one when another one's animation is still running) + keep correctness
     */
 
@@ -111,31 +111,46 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,nullCardCSSB
           gameModel.getCards().map((card,i) => {
             const blueprintIndex = blueprint.cards.indexOf(card.blueprint);
             const background = card.visible ? cardCSSBackgrounds[blueprintIndex] : hiddenCardCSSBackground;
+            const blueprintWon = gameModel.isWinningCard(card.blueprint);
+            const allCardsDisabledP = allCardsDisabled || blueprintWon;
 
             return (
                 <Card 
                     key={i}
                     card={card} 
-                    style={{...cardStyles,background,cursor: allCardsDisabled ? 'not-allowed': 'pointer'}}
-                    className='game-card'
-                    onClick={async e => {
+                    style={{...cardStyles,background,cursor: allCardsDisabledP ? 'not-allowed': 'pointer'}}
+                    className={['game-card',blueprintWon ? 'game-card-win': ''].join(' ')}
+                    onClick={ allCardsDisabledP
+                      ? async e => {
+                        const magnitude = 5;
+                        await (e.target as HTMLButtonElement).animate([
+                            { transform: `translateX(${magnitude}px)` }, 
+                            { transform: `translateX(-${magnitude}px)` },
+                            { transform: `translateX(${magnitude}px)` }, 
+                            { transform: `translateX(-${magnitude}px)` },
+                            { transform: `translateX(${magnitude}px)` }, 
+                            { transform: `translateX(-${magnitude}px)` },
+                        ], {
+                            duration: 300,      // Duration of the animation in milliseconds
+                            easing: 'ease-in-out' // Easing function for smooth animation
+                        }).finished;
+                      }
+                      : async e => {
                         setAllCardsDisabled(true);
 
                         await refreshGUI();
 
                         await gameModel.openCard(...card.position);
-                        //await refreshGUI();
-
-                        console.log('Animations done');
 
                         if (gameModel.hasWonGame()){
-                            alert('BINGO');
+                          await refreshGUI();   //for game-card-win animation to take effect
+                          await delay(2000);    //wait its first cycle
+                          alert('BINGO');
                         }
 
                         setAllCardsDisabled(false);
                     }}
                     ref={cardElements[i]}
-                    disabled={allCardsDisabled}
                 >
                     <></>
                 </Card>
