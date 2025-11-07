@@ -11,7 +11,9 @@
     "test": "mocha src/models/*.test.ts"
   },
   "dependencies": {
+    "bootstrap": "^5.3.8",
     "react": "^19.1.1",
+    "react-bootstrap": "^2.10.10",
     "react-countup": "^6.5.3",
     "react-dom": "^19.1.1",
     "react-fast-marquee": "^1.6.5",

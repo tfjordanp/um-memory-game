@@ -5,6 +5,7 @@ import './menu-animated-background.css';
 import Marquee from "react-fast-marquee";
 import { useNavigate } from "react-router-dom";
 
+
 function AnimatedBackground({style}:{style?:React.CSSProperties}){
     return (
         <div className="wrapper" style={style}>
@@ -26,6 +27,12 @@ function AnimatedBackground({style}:{style?:React.CSSProperties}){
         </div>
     );
 }
+
+
+import { useModalState } from "../utils";
+
+import 'bootstrap/dist/css/bootstrap.min.css';
+import OptionsModal from "../components/options-modal";
 
 function Menu(){
     const rootLayoutStyles:React.CSSProperties = {
@@ -69,6 +76,8 @@ function Menu(){
 
     const nav = useNavigate();
 
+    const optionsModalState = useModalState(false);
+
     return (
         <div style={{position: 'relative',top: 0,left: 0,width: '100%',height: '100%',overflow: 'hidden'}}>
             <AnimatedBackground style={stackStyles}/>
@@ -76,10 +85,11 @@ function Menu(){
                 <div style={{fontFamily:'cursive',fontSize: '4rem'}}>GEMÖ</div>
                 <div style={layoutStyles}>
                     {
-                        [['PLAY','/game'],['AI SIMULATION'],['OPTIONS'],['ABOUT']]
+                        [['PLAY','/game'],['AI SIMULATION','/game'],['OPTIONS'],['ABOUT']]
                         .map(
                             ([label,route],i) => 
                                 <button key={i} className='menu-button' style={buttonStyles} onClick={e => {
+                                    if (label === 'OPTIONS')    optionsModalState.setShow(true);
                                     if (!route)     return ;
                                     nav(route);
                                 }}>
@@ -89,6 +99,7 @@ function Menu(){
                     }
                 </div>
                 <Marquee style={{fontFamily: 'sans-serif'}} pauseOnClick={true}>Written by Tchinda Jordan, Nov 2025</Marquee>
+                <OptionsModal {...optionsModalState}/>
             </div>
         </div>
         
