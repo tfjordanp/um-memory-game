@@ -103,8 +103,18 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds}:GameParams)
         closeCard: playCardAnimation,
         penalized: async _ =>{
           await playShakeAnimation(boardElementRef.current as HTMLElement);
-        } 
-        //shake board on penalize ?!
+        },
+        beforeOpenCard: async () => {
+          if (appModel?.state.aiMode)   return ;
+          setActionsCount(actions => actions + 1);
+          await refreshGUI();
+          /** HAVING UNEXPECTED VISUAL BEHAVIOR ON AI MODE */
+        },
+        afterOpenCard: async () => {
+          if (appModel?.state.aiMode === false)   return ;
+          //AI will never make useless openCard calls
+          setActionsCount(actions => actions + 1);
+        }
     });
   },[gameModel]);
 
@@ -180,11 +190,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds}:GameParams)
                       }
                       : async _ => {
                         setAllCardsDisabled(true);
-                        if (!gameModel.isWinningCard(card.blueprint)){
-                          setActionsCount(actions => actions + 1);
-                        }
                         await refreshGUI();
-
                         
                         await gameModel.openCard(...card.position);
 

@@ -73,6 +73,9 @@ interface MemoryGameEvents{
     closeCard?: ((x:number,y:number) => Promise<void>) | null;
     openCard?: ((x:number,y:number) => Promise<void>) | null;
     penalized?: ((cardBlueprint: MemoryGameCardBlueprint) => Promise<void>) | null;
+    beforeOpenCard?: () => Promise<void> | null;
+    afterOpenCard?: () => Promise<void> | null;
+    hasWon?: () => Promise<void> | null;
 }
 
 class MemoryGame{
@@ -215,7 +218,7 @@ class MemoryGame{
         return this;
     }
 
-    async openCard(x:number,y:number){
+    private async _openCard(x:number,y:number){
         
         this.boardIndexValidation(x,y);
 
@@ -232,6 +235,9 @@ class MemoryGame{
 
         if (this.isWinningCard(card.blueprint)){
             return this;
+        }
+        else{
+            await this.events.beforeOpenCard?.();
         }
 
         const blueprintOfCurrent = this.getBlueprintOfOpenedCards();
@@ -272,6 +278,19 @@ class MemoryGame{
 
         return this;
     }
+
+    async openCard(x:number,y:number){
+        const result = await this._openCard(x,y);
+        
+        if (this.hasWonGame()){
+            await this.events.hasWon?.();
+        }
+
+        await this.events.afterOpenCard?.();
+
+        return result;
+    }
+
 
     //Events
 
