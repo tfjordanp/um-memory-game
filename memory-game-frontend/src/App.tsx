@@ -14,6 +14,7 @@ import { useState } from 'react';
 import AppModelContext from './context/AppModelContext';
 import GamePage from './pages/game-page';
 
+/*
 const blueprint:MemoryGameBlueprint =  {cards: [
     {count:3,consecutiveErrorsAllowed:0,penalizeType: 'current'},
     {count:3,consecutiveErrorsAllowed:0,penalizeType: 'current'},
@@ -23,7 +24,12 @@ const blueprint:MemoryGameBlueprint =  {cards: [
     {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
     {count:3,consecutiveErrorsAllowed:0,penalizeType: 'current'},
 ],penalizeOnNullCards: true};
+*/
 
+const blueprint:MemoryGameBlueprint =  {cards: [
+    {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
+    {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
+],penalizeOnNullCards: true};
 
 const colors = [
   'red',

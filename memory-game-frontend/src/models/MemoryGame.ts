@@ -282,11 +282,11 @@ class MemoryGame{
     async openCard(x:number,y:number){
         const result = await this._openCard(x,y);
         
+        await this.events.afterOpenCard?.();
+
         if (this.hasWonGame()){
             await this.events.hasWon?.();
         }
-
-        await this.events.afterOpenCard?.();
 
         return result;
     }

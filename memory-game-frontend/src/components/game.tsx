@@ -114,6 +114,12 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds}:GameParams)
           if (appModel?.state.aiMode === false)   return ;
           //AI will never make useless openCard calls
           setActionsCount(actions => actions + 1);
+          await refreshGUI();
+        },
+        hasWon: async () => {
+          await refreshGUI();   //for game-card-win animation to take effect
+          await delay(2000);    //wait its first cycle
+          alert('BINGO');
         }
     });
   },[gameModel]);
@@ -193,12 +199,6 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds}:GameParams)
                         await refreshGUI();
                         
                         await gameModel.openCard(...card.position);
-
-                        if (gameModel.hasWonGame()){
-                          await refreshGUI();   //for game-card-win animation to take effect
-                          await delay(2000);    //wait its first cycle
-                          alert('BINGO');
-                        }
 
                         setAllCardsDisabled(false);
                     }}
