@@ -25,3 +25,14 @@ export function useOnMountUnsafe(effect: EffectCallback) {
     }
   }, [])
 }
+
+export function useBackButton(handlePopstate: (e: PopStateEvent) => void){
+  useOnMountUnsafe(() => {
+    window.addEventListener("popstate", handlePopstate);
+    console.log('popstate mounted');
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+    };
+  });
+
+};

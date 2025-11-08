@@ -3,9 +3,8 @@ import type { MemoryGame, MemoryGameCard } from "./MemoryGame";
 import { difference, sample } from 'lodash';
 
 
-export async function play(model: MemoryGame,memoryFaculty: number = 0.5){
+export async function play(model: MemoryGame,memoryFaculty: number = 0.5,signal?: AbortSignal){
     console.log('PLAY CALLED');
-
     let nonWinningCards = model.getCards().filter(card => !model.isWinningCard(card.blueprint));
     
     if (nonWinningCards.length === 0)   return ;
@@ -19,7 +18,7 @@ export async function play(model: MemoryGame,memoryFaculty: number = 0.5){
 
 
 
-    while(!model.hasWonGame()){
+    while(!model.hasWonGame() && !signal?.aborted){
         nonWinningCards = model.getCards().filter(card => !model.isWinningCard(card.blueprint));    //length cannot be 0 if model.hasWonGame is not true
         memory = memory.filter(card => !model.isWinningCard(card.blueprint));
         

@@ -8,7 +8,7 @@ import Card from '../components/card';
 /*import { CountUp } from "https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.6.0/countUp.min.js";
 import { Odometer } from "./odometer.min.js";*/
 
-import { delay, useOnMountUnsafe } from '../utils';
+import { delay, useBackButton, useOnMountUnsafe } from '../utils';
 
 import Odometer from 'react-odometerjs';
 import './odometer-theme-slot-machine.css';
@@ -24,9 +24,11 @@ interface GameParams{
   hiddenCardCSSBackground: string;
   cardCSSBackgrounds: string[];
   nullCardCSSBackground: string;
+
+  signal?: AbortSignal;
 };
 
-function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds}:GameParams){
+function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:GameParams){
   const gameModel = useMemo(() => new MemoryGame(blueprint),[blueprint]);
 
   const cardElements = Array.from(
@@ -129,7 +131,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds}:GameParams)
 
   useOnMountUnsafe(() => {
     if (appModel?.state.aiMode){
-      play(gameModel,1);
+      play(gameModel,1,signal);
     }
   });
 

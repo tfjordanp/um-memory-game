@@ -1,6 +1,9 @@
 
+import { useNavigate } from 'react-router-dom';
 import Game from '../components/game';
 import './game-animated-background.css';
+
+import { useMemo } from 'react';
 
 function AnimatedBackground({style}:{style?:React.CSSProperties}){
     return (
@@ -16,11 +19,22 @@ function GamePage({...gameProps}:Parameters<typeof Game>[0]){
         width: '100%',
         height: '100%',
     };
+    const controller = useMemo(() => new AbortController(),[]);
+    const navigate = useNavigate();
     return (
         <div style={{position: 'relative',top: 0,left: 0, width: '100%',height: '100%',overflow:'hidden'}}>
             <AnimatedBackground style={{...stackStyles}}/>
             <div style={{display: 'flex',flexDirection: 'column',justifyContent: 'center',alignItems: 'center', ...stackStyles}}>
-                <Game {...gameProps} />
+                <Game signal={controller.signal} {...gameProps} />
+                <button style={{width: '80%',marginTop: '5rem'}} onClick={e => {
+                    if (!confirm('Do you really want to quit the party ?\nAll progress shall be lost !!')){
+                        navigate('/game/');
+                        return ;
+                    }
+                    
+                    controller.abort('reason');
+                    navigate('/menu/');
+                }}>BACK</button>
             </div>
         </div>
     );

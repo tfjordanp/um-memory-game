@@ -101,7 +101,7 @@ function Menu(){
                                     if (label === 'OPTIONS')    optionsModalState.setShow(true);
                                     if (!route)     return ;
                                     
-                                    navigate(route);
+                                    navigate(route,{replace: true});
                                 }}>
                                     {label}
                                 </button>
