@@ -43,6 +43,7 @@ const colors = [
 interface AppModel{
   audioEnabled: boolean;
   aiMode: boolean;
+  aiLevel: number;
 };
 
 
@@ -50,7 +51,8 @@ interface AppModel{
 function App() {
   const [ state , setState ] = useState<AppModel>({
     audioEnabled: false,
-    aiMode: false,
+    aiMode: false,    //doesn't makes sense with persistence. Should be a <GamePage> param ?!!!
+    aiLevel: 0.75,
   });
 
   return (

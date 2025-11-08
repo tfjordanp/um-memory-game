@@ -82,9 +82,9 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
         }).finished;
     };
 
-  const playShakeAnimation = async (target: HTMLElement) => {
+  const playShakeAnimation = async (target: HTMLElement | null) => {
     const magnitude = 5;
-      await target.animate([
+      await target?.animate([
           { transform: `translateX(${magnitude}px)` }, 
           { transform: `translateX(-${magnitude}px)` },
           { transform: `translateX(${magnitude}px)` }, 
@@ -104,7 +104,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
         openCard: playCardAnimation,
         closeCard: playCardAnimation,
         penalized: async _ =>{
-          await playShakeAnimation(boardElementRef.current as HTMLElement);
+          await playShakeAnimation(boardElementRef.current);
         },
         beforeOpenCard: async () => {
           if (appModel?.state.aiMode)   return ;
@@ -131,7 +131,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
 
   useOnMountUnsafe(() => {
     if (appModel?.state.aiMode){
-      play(gameModel,1,signal);
+      play(gameModel,appModel.state.aiLevel,signal);
     }
   });
 
