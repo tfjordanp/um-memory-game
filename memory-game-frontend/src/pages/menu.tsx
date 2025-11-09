@@ -29,12 +29,16 @@ function AnimatedBackground({style}:{style?:React.CSSProperties}){
 }
 
 
-import { useModalState } from "../utils";
+import { useModalState, useOnMountUnsafe } from "../utils";
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import OptionsModal from "../components/options-modal";
 import { useContext } from "react";
 import AppModelContext from "../context/AppModelContext";
+
+import menuMusic from '../assets/music/menu-music.ogg';
+import { useAudioPlayer } from "react-use-audio-player";
+
 
 function Menu(){
     const rootLayoutStyles:React.CSSProperties = {
@@ -81,6 +85,13 @@ function Menu(){
     const optionsModalState = useModalState(false);
 
     const appModel = useContext(AppModelContext);
+
+    const { play, stop } = useAudioPlayer(menuMusic,{autoplay: true,loop:true,initialVolume: 0.75});
+
+    useOnMountUnsafe(() => {
+        play();
+        return stop;
+    });
 
     return (
         <div style={{position: 'relative',top: 0,left: 0,width: '100%',height: '100%',overflow: 'hidden'}}>

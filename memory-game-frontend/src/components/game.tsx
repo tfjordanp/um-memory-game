@@ -8,7 +8,7 @@ import Card from '../components/card';
 /*import { CountUp } from "https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.6.0/countUp.min.js";
 import { Odometer } from "./odometer.min.js";*/
 
-import { delay, useBackButton, useModalState, useOnMountUnsafe } from '../utils';
+import { delay, useModalState, useOnMountUnsafe } from '../utils';
 
 import Odometer from 'react-odometerjs';
 import './odometer-theme-slot-machine.css';
@@ -17,6 +17,15 @@ import './game.css';
 import AppModelContext from '../context/AppModelContext';
 import { play } from '../models/AIPlayScript';
 import WinModal from './win-modal';
+import { useAudioPlayer } from 'react-use-audio-player';
+
+import penalizeSoundEffect from '../assets/sound-effects/penalize.wav';
+import winSoundEffect from '../assets/sound-effects/win-sound.wav';
+import winSoundEffect2 from '../assets/sound-effects/win-sound2.wav';
+import refuseSoundEffect from '../assets/sound-effects/refuse.wav';
+import turnOffSoundEffect from '../assets/sound-effects/turn-off.wav';
+import turnOnSoundEffect from '../assets/sound-effects/turn-on.wav';
+
 
 interface GameParams{
   /*style?: React.CSSProperties;*/
@@ -104,11 +113,27 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
   
   const winModalState = useModalState(false);
 
+  const { play: playPenalizeSoundEffect } = useAudioPlayer(penalizeSoundEffect,{});
+  const { play: playWinSoundEffect } = useAudioPlayer(winSoundEffect,{});
+  const { play: playWinSoundEffect2 } = useAudioPlayer(winSoundEffect2,{});
+  const { play: playRefuseSoundEffect } = useAudioPlayer(refuseSoundEffect,{});
+  const { play: playTurnOffSoundEffect } = useAudioPlayer(turnOffSoundEffect,{});
+  const { play: playTurnOnSoundEffect } = useAudioPlayer(turnOnSoundEffect,{});
+  
+
+
   useEffect(() => {
     gameModel.setEventListeners({
-        openCard: playCardAnimation,
-        closeCard: playCardAnimation,
+        openCard:  async (x,y) => {
+          playTurnOnSoundEffect();
+          await playCardAnimation(x,y);
+        },
+        closeCard: async (x,y) => {
+          playTurnOffSoundEffect();
+          await playCardAnimation(x,y);
+        },
         penalized: async _ =>{
+          playPenalizeSoundEffect();
           await playShakeAnimation(boardElementRef.current);
         },
         beforeOpenCard: async () => {
@@ -128,6 +153,9 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
           await delay(2000);    //wait its first cycle
           //alert('BINGO');
           winModalState.setShow(true);
+          playWinSoundEffect();
+          await delay(1.500*1000);
+          playWinSoundEffect2();
         }
     });
   },[gameModel]);
@@ -200,6 +228,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
                     className={['game-card',blueprintWon ? 'game-card-win': ''].join(' ')}
                     onClick={ allCardsDisabledP
                       ? async e => {
+                        playRefuseSoundEffect();
                         await playShakeAnimation((e.target as HTMLButtonElement));
                       }
                       : async _ => {
