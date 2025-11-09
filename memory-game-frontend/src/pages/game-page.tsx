@@ -28,7 +28,7 @@ function GamePage({...gameProps}:Parameters<typeof Game>[0]){
     const navigate = useNavigate();
     const appModel = useContext(AppModelContext);
 
-    const { play, stop } = useAudioPlayer(music,{autoplay:true,loop:true,initialVolume: appModel?.state.audioEnabled ? 0.75 : 0,initialRate: 1});
+    const { play, stop, setRate } = useAudioPlayer(music,{autoplay:true,loop:true,initialVolume: appModel?.state.audioEnabled ? 0.75 : 0,initialRate: 1});
 
     useOnMountUnsafe(() => {
         play();
@@ -39,7 +39,7 @@ function GamePage({...gameProps}:Parameters<typeof Game>[0]){
         <div style={{position: 'relative',top: 0,left: 0, width: '100%',height: '100%',overflow:'hidden'}}>
             <AnimatedBackground style={{...stackStyles}}/>
             <div style={{display: 'flex',flexDirection: 'column',justifyContent: 'center',alignItems: 'center', ...stackStyles}}>
-                <Game signal={controller.signal} {...gameProps} />
+                <Game signal={controller.signal} {...gameProps} setGameMusicRate={setRate} />
                 <button style={{width: '80%',marginTop: '5rem'}} onClick={e => {
                     if (!confirm('Do you really want to quit the party ?\nAll progress shall be lost !!')){
                         navigate('/game/');
