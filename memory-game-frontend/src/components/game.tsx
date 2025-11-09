@@ -8,7 +8,7 @@ import Card from '../components/card';
 /*import { CountUp } from "https://cdnjs.cloudflare.com/ajax/libs/countup.js/2.6.0/countUp.min.js";
 import { Odometer } from "./odometer.min.js";*/
 
-import { delay, useBackButton, useOnMountUnsafe } from '../utils';
+import { delay, useBackButton, useModalState, useOnMountUnsafe } from '../utils';
 
 import Odometer from 'react-odometerjs';
 import './odometer-theme-slot-machine.css';
@@ -16,6 +16,7 @@ import './odometer-theme-slot-machine.css';
 import './game.css';
 import AppModelContext from '../context/AppModelContext';
 import { play } from '../models/AIPlayScript';
+import WinModal from './win-modal';
 
 interface GameParams{
   /*style?: React.CSSProperties;*/
@@ -99,6 +100,10 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
 
   const boardElementRef = useRef<HTMLDivElement>(null);
 
+
+  
+  const winModalState = useModalState(false);
+
   useEffect(() => {
     gameModel.setEventListeners({
         openCard: playCardAnimation,
@@ -121,7 +126,8 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
         hasWon: async () => {
           await refreshGUI();   //for game-card-win animation to take effect
           await delay(2000);    //wait its first cycle
-          alert('BINGO');
+          //alert('BINGO');
+          winModalState.setShow(true);
         }
     });
   },[gameModel]);
@@ -212,6 +218,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal}:Game
           })
         }
       </Board>
+      <WinModal state={winModalState} actionsCount={actionsCount}/>
     </GameModelContext.Provider>
   )
 }

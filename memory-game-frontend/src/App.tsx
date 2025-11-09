@@ -10,9 +10,12 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AppModelContext from './context/AppModelContext';
 import GamePage from './pages/game-page';
+import { localStorageKey } from './KEYS';
+import { useLocalStorage } from 'usehooks-ts';
+
 
 /*
 const blueprint:MemoryGameBlueprint =  {cards: [
@@ -54,6 +57,17 @@ function App() {
     aiMode: false,    //doesn't makes sense with persistence. Should be a <GamePage> param ?!!!
     aiLevel: 0.75,
   });
+
+  const [_a,setValue,remove] = useLocalStorage(localStorageKey,null);
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+       remove();
+       //Clear local storage, for reproducible tests
+
+      setValue({records: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},]} as any);
+    }
+  },[]);
 
   return (
     <AppModelContext.Provider value={{state,setState}}>
