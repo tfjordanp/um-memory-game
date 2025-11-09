@@ -2,7 +2,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Table from 'react-bootstrap/Table';
 
-import type { useModalState } from '../utils';
+import { delay, type useModalState } from '../utils';
 import { useContext, useEffect } from 'react';
 import AppModelContext from '../context/AppModelContext';
 import { useNavigate } from 'react-router-dom';
@@ -45,7 +45,7 @@ function WinModal({state:{show,handleClose},actionsCount:ac,level=''}:WinModalPa
                 <Modal.Title className='cool-shake'>Well done !!</Modal.Title>
             </Modal.Header>
             
-            <Modal.Body style={{overflow: 'auto',height: '576px'}} className='soft-shake'>
+            <Modal.Body style={{overflow: 'auto',maxHeight: '576px'}} className='soft-shake'>
                 <Table striped bordered hover>
                     <thead>
                         <tr>
@@ -80,6 +80,7 @@ function WinModal({state:{show,handleClose},actionsCount:ac,level=''}:WinModalPa
                 <Button variant="primary" onClick={async e => {
                     handleClose();
                     await navigate('/menu/');
+                    await delay(0);
                     await navigate('/game/');
                 }}>
                     Play Again

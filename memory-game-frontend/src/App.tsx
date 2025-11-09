@@ -34,6 +34,12 @@ const blueprint:MemoryGameBlueprint =  {cards: [
     {count:2,consecutiveErrorsAllowed:0,penalizeType: 'current'},
 ],penalizeOnNullCards: true};
 
+/*const blueprint:MemoryGameBlueprint =  {cards: [
+    {count:3,consecutiveErrorsAllowed:0,penalizeType: 'current'},
+    {count:3,consecutiveErrorsAllowed:0,penalizeType: 'current'},
+    {count:3,consecutiveErrorsAllowed:0,penalizeType: 'current'},
+],penalizeOnNullCards: true};*/
+
 const colors = [
   'red',
   'green',
@@ -65,7 +71,7 @@ function App() {
        remove();
        //Clear local storage, for reproducible tests
 
-      setValue({records: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},]} as any);
+      //setValue({records: [{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},]} as any);
     }
   },[]);
 
