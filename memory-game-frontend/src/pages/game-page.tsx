@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Game from '../components/game';
 import './game-animated-background.css';
 
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useState } from 'react';
 
 import music from '../assets/music/music.ogg';
 import { useOnMountUnsafe } from '../utils';
@@ -35,11 +35,13 @@ function GamePage({...gameProps}:Parameters<typeof Game>[0]){
         return stop;
     });
 
+    const [ win, setWin ] = useState(false);
+
     return (
         <div style={{position: 'relative',top: 0,left: 0, width: '100%',height: '100%',overflow:'hidden'}}>
-            <AnimatedBackground style={{...stackStyles}}/>
+            <AnimatedBackground style={{...stackStyles,...(win ? {animation: 'p infinite 0.1s linear'} : {})}}/>
             <div style={{display: 'flex',flexDirection: 'column',justifyContent: 'center',alignItems: 'center', ...stackStyles}}>
-                <Game signal={controller.signal} {...gameProps} setGameMusicRate={setRate} />
+                <Game signal={controller.signal} {...gameProps} setGameMusicRate={setRate} hasWon={async ()=>setWin(true)} />
                 <button style={{width: '80%',marginTop: '5rem'}} onClick={e => {
                     if (!confirm('Do you really want to quit the party ?\nAll progress shall be lost !!')){
                         navigate('/game/');

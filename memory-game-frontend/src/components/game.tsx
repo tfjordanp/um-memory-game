@@ -39,9 +39,11 @@ interface GameParams{
   signal?: AbortSignal;
 
   setGameMusicRate?: ReturnType<typeof useAudioPlayer>['setRate'];
+
+  hasWon?: ()=>Promise<void>;
 };
 
-function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal,setGameMusicRate}:GameParams){
+function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal,setGameMusicRate,hasWon}:GameParams){
   const gameModel = useMemo(() => new MemoryGame(blueprint),[blueprint]);
 
   const cardElements = Array.from(
@@ -169,6 +171,7 @@ function Game({blueprint,hiddenCardCSSBackground,cardCSSBackgrounds,signal,setGa
           await delay(2000);    //wait its first cycle
           //alert('BINGO');
           setGameMusicRate?.(1.15);
+          await hasWon?.();
           winModalState.setShow(true);
           playWinSoundEffect();
           await delay(1.500*1000);
