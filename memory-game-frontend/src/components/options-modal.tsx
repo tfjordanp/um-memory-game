@@ -21,7 +21,7 @@ function OptionsModal({show,handleClose}:ReturnType<typeof useModalState>){
                     <Form.Check.Label style={{fontSize: '2rem',paddingLeft: '5.5rem',paddingRight: '5.5rem'}} htmlFor='audio-switch'>{appModel?.state?.audioEnabled ? "Turn off audio" : "Turn on audio"}</Form.Check.Label>
                </Form.Check> 
                <div style={{marginTop: '2rem',display: 'flex',alignItems: 'center'}}>
-                <Form.Range style={{flex: 1}} value={(appModel?.state.aiLevel || 0)*100} onChange={e => appModel?.setState(state => (/*console.log(e.target.valueAsNumber),*/{...state,aiLevel: e.target.valueAsNumber/100}))}/>
+                <Form.Range style={{flex: 1}} value={(appModel?.state.aiLevel || 0)*100} onChange={e => appModel?.setState(state => ({...state,aiLevel: e.target.valueAsNumber/100}))}/>
                 <Form.Label style={{fontFamily: 'monospace',fontSize: '2rem',textAlign: 'right',paddingRight: '.5rem',paddingLeft:'2rem'}}
                 >AI Level = {(()=>{
                     const level = appModel?.state.aiLevel;

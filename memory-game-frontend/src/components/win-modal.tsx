@@ -17,16 +17,19 @@ interface WinModalParams{
     actionsCount: number;
     level?: string;
 }
-
 interface GemoPersistStorage{
     records: {ac:number,level:string,isAI: boolean,aiLevel:number}[];
+    audioEnabled: boolean;
+    aiLevel: number;
 };
+
+const GemoPersistStorageDefault:GemoPersistStorage = {records:[],audioEnabled:false,aiLevel:0.75};
 
 function WinModal({state:{show,handleClose},actionsCount:ac,level=''}:WinModalParams){
     const appModel = useContext(AppModelContext);
     const navigate = useNavigate();
 
-    const [ value, setValue ] = useLocalStorage(localStorageKey,{records:[]} as GemoPersistStorage);
+    const [ value, setValue ] = useLocalStorage(localStorageKey,GemoPersistStorageDefault);
 
     useEffect(() => {
         if (show === false)     return ;
@@ -56,6 +59,7 @@ function WinModal({state:{show,handleClose},actionsCount:ac,level=''}:WinModalPa
                     </thead>
                     <tbody>
                         {
+                            /** Highlight most recent record */
                             value.records.toSorted((rec1,rec2) => rec1.ac - rec2.ac)
                             .map((rec,i) => 
                                 <tr key={i}>
@@ -91,3 +95,5 @@ function WinModal({state:{show,handleClose},actionsCount:ac,level=''}:WinModalPa
 }
 
 export default WinModal;
+export { GemoPersistStorageDefault };
+export type { GemoPersistStorage };

@@ -36,3 +36,16 @@ export function useBackButton(handlePopstate: (e: PopStateEvent) => void){
   });
 
 };
+
+
+/*async function preDecorator<T extends (...p:any)=>any>(func:T,decorator: (...args:Parameters<T>)=>Promise<void>,...args:Parameters<T>){
+  await decorator(...args);
+  return func(...args);
+}*/
+
+function preDecoratorSync<T extends (...p:any)=>any>(func:T,decorator: (...args:Parameters<T>)=>void){
+  return (...args:Parameters<T>) => {
+    decorator(...args);
+    return func(...args);
+  }
+}

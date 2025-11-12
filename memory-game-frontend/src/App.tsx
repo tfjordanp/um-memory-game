@@ -63,16 +63,25 @@ interface AppModel{
   aiLevel: number;
 };
 
+import { GemoPersistStorageDefault } from './components/win-modal';
+
 
 
 function App() {
+  const [ store, setStore ] = useLocalStorage(localStorageKey,GemoPersistStorageDefault);
+
   const [ state , setState ] = useState<AppModel>({
-    audioEnabled: false,
+    audioEnabled: store.audioEnabled,
     aiMode: false,    //doesn't makes sense with persistence. Should be a <GamePage> param ?!!!
-    aiLevel: 0.75,
+    aiLevel: store.aiLevel,
   });
 
   const [_a,setValue,remove] = useLocalStorage(localStorageKey,null);
+
+  useEffect(() => {
+    setStore(store => ({...store, aiLevel: state.aiLevel,audioEnabled: state.audioEnabled}));
+  },[state]);
+
 
   useEffect(() => {
     if (import.meta.env.DEV) {
